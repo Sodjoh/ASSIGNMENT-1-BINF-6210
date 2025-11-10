@@ -259,17 +259,17 @@ ggplot(taxa_country_count, aes(y = fct_reorder(order, n_countries), x = n_countr
   coord_flip() +
   labs(title = "Global Widespreadness of Taxa (by Number of Countries)", y = "Order", x = "Number of countries") +
   scale_fill_gradient(low = "blue", high = "lightblue") +
-  theme_minimal(base_size = 13) 
+  theme_minimal(base_size = 13)
 
 
 #GITHUB COMMANDS - BARTEK
 #usethis::git_remotes()
 #usethis::git_sitrep()
 #usethis::pr_init(branch = "barteks_branch")
-usethis::pr_push()
-usethis::pr_pull()
-usethis::pr_finish()
-usethis::git_sitrep()
+#usethis::pr_push()
+#usethis::pr_pull()
+#usethis::pr_finish()
+#usethis::git_sitrep()
 
 
 
