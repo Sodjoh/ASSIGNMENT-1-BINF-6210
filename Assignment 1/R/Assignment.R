@@ -1,3 +1,4 @@
+#Edited by Bartek Puzio, LINE  55-83, 132-133, 145, 178, 222, 235-236, 250. The changes are commented so they are still not applied, i will apply them and push again once we've gone over the changes in person!
 # Install the required package
 install.packages("readr")
 install.packages("styler")
@@ -12,7 +13,7 @@ library(lubridate)
 library(styler)
 ##Reading in data i.e Brachiopoda location from the PC
 
-df_bold <- read_tsv(file = "../R/result.tsv")
+df_bold <- read_tsv(file = "../data/result.tsv")
 
 #Exploring data with various functions
 
@@ -49,11 +50,39 @@ table(df_bold$order)
 table(df_bold$`country/ocean`)
 
 # Sort the frequency table of 'country/ocean' in descending order
-sort(table(df_bold$`country/ocean`), decreasing = TRUE)
+top_counts <- sort(table(df_bold$`country/ocean`), decreasing = TRUE)
 
-# Plot the top 20 most frequent 'country/ocean' values
+######################################################################################################
+library(ggplot2)
+library(dplyr)
+
+# this line of code cleans up the 'country/ocean' table by removing NA and Unrecoverable and stores it as a new variable which i will use to generate a new plot.
+df_country <- df_bold %>%
+  filter(!is.na(`country/ocean`)) %>% 
+  filter(`country/ocean` != "Unrecoverable") %>%
+  count(`country/ocean`, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  slice_head(n = 20)
+
+
+# Plotting Top 20 Countries by Number of Records in BOLD Dataset USING GGPLOT
+ggplot(df_country, aes(x = reorder(`country/ocean`, -Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Top 20 Countries by Number of Records in BOLD Dataset",
+    x = "Country or Ocean",
+    y = "Number of Records"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1.)
+  ) +
+  expand_limits(y = max(df_country$Count) * 1.1)  
+
+
+###################################################################################################
+# Plot the top 20 most frequent 'country/ocean' values 
 plot(sort(table(df_bold$`country/ocean`), decreasing = TRUE)[1:20])
-
 # Sort the frequency table of 'bin_uri' in descending order
 sort(table(df_bold$bin_uri), decreasing = TRUE)
 
@@ -100,6 +129,8 @@ bins_country <- df_bold %>%
 # Sort and group the dataset by 'country/ocean', count unique BINs per country,
 # and arrange results from highest to lowest BIN count
 country_bins <- df_bold %>%
+  #filter(!is.na(`country/ocean`)) %>%  #BARTEK EDIT
+  #filter(`country/ocean` != "Unrecoverable") %>% BARTERK EDIT
 group_by(`country/ocean`) %>%
 summarise(num_bins = n_distinct(bin_uri)) %>%
 arrange(desc(num_bins))            
@@ -110,7 +141,8 @@ ggplot(country_bins, aes(x = reorder(`country/ocean`, -num_bins), y = num_bins))
 geom_bar(stat = "identity", fill = "darkblue") +
 theme_minimal() +
 labs(title = "Number of BINs per Country", x = "Country", y = "Number of Unique BINs") +
-theme(axis.text.x = element_text(angle = 45, hjust = 1))
+theme(axis.text.x = element_text(angle = 45, hjust = 1))#,
+#plot.title = element_text(hjust = 0.5)) remove second parantheses in existing code before adding comment BARTEK EDIT
 
 #Summarize BIN diversity by taxonomic order and visualize the results.
 bins_order <- df_bold %>%
@@ -142,7 +174,9 @@ ggplot(bin_richness, aes(x = mean_lat, y = BIN_richness)) +
     x = "Mean Latitude (°)",
     y = "BIN Richness (Number of Unique BINs)"
   ) +
-  theme_minimal(base_size = 13)
+  theme_minimal(base_size = 13) #+
+  #coord_cartesian(ylim = c(0, 10)) BARTEK EDIT TO ZOOM IN 
+
 
 # Summarize the number of unique BINs per country, arrange in descending order,
 # select the top 10 countries, and visualize using a bar chart.
@@ -185,6 +219,7 @@ df_boldsub <- df_bold %>%
 # Then arrange in descending order of BIN diversity
 order_diversity <- df_bold %>%
   group_by(order) %>%
+  #filter(!is.na(`order`)) %>% #BARTEK EDIT DATA FILTERING
   summarise(Unique_BINs = n_distinct(bin_uri)) %>%
   arrange(desc(Unique_BINs))
 
@@ -196,7 +231,10 @@ ggplot(order_diversity, aes(y = reorder(order, Unique_BINs), x = Unique_BINs, fi
   geom_col(show.legend = FALSE) +
   coord_flip() +
   theme_minimal(base_size = 13) +
-  labs(title = "Barcode Diversity Across Orders", subtitle = "Number of unique BINs per order", y = "Order", x = "Unique BINs")
+  labs(title = "Barcode Diversity Across Orders", subtitle = "Number of unique BINs per order", y = "Order", x = "Unique BINs") #+
+  #theme(plot.title = element_text(hjust = 0.5),
+        #plot.subtitle = element_text(hjust = 0.5))
+
 
 # Create a new data frame including the country and order and filtering the missing values
 
@@ -209,6 +247,7 @@ df_boldnew <- df_bold %>%
 taxa_country_count <- df_bold %>%
   group_by(order) %>%                     
   summarise(n_countries = n_distinct(`country/ocean`), n_records = n()) %>%
+  #filter(!is.na(`order`)) %>% #bartek edit filtering data step
   arrange(desc(n_countries))
 
 # Display the first few rows (top orders by number of countries)
@@ -223,6 +262,14 @@ ggplot(taxa_country_count, aes(y = fct_reorder(order, n_countries), x = n_countr
   theme_minimal(base_size = 13)
 
 
+#GITHUB COMMANDS - BARTEK
+#usethis::git_remotes()
+#usethis::git_sitrep()
+#usethis::pr_init(branch = "barteks_branch")
+#usethis::pr_push()
+#usethis::pr_pull()
+#usethis::pr_finish()
+#usethis::git_sitrep()
 
 
 
